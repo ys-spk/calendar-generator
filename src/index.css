@@ -1,0 +1,15 @@
+@page {
+  size: A4 portrait;
+  margin: 15mm;
+}
+
+:root {
+  font-family: 'M PLUS 2';
+}
+
+@media print {
+  :root {
+    background-color: white;
+    print-color-adjust: exact;
+  }
+}
