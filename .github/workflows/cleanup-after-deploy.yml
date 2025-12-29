@@ -1,0 +1,104 @@
+name: Cleanup deployments and Actions history
+
+on:
+  workflow_run:
+    workflows: ['Deploy static content to Pages']
+    types: [completed]
+
+permissions:
+  actions: write
+  deployments: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Remove deployments and workflow runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const deploymentEnv = 'github-pages';
+            const perPage = 100;
+
+            async function listAllDeployments() {
+              const deployments = [];
+              for (let page = 1; ; page += 1) {
+                const response = await github.request('GET /repos/{owner}/{repo}/deployments', {
+                  owner,
+                  repo,
+                  environment: deploymentEnv,
+                  per_page: perPage,
+                  page,
+                });
+                deployments.push(...response.data);
+                if (response.data.length < perPage) break;
+              }
+              return deployments;
+            }
+
+            async function listAllWorkflowRuns() {
+              const runs = [];
+              for (let page = 1; ; page += 1) {
+                const response = await github.request('GET /repos/{owner}/{repo}/actions/runs', {
+                  owner,
+                  repo,
+                  per_page: perPage,
+                  page,
+                });
+                runs.push(...response.data.workflow_runs);
+                if (response.data.workflow_runs.length < perPage) break;
+              }
+              return runs;
+            }
+
+            const retentionDays = 7;
+            const cutoff = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+
+            const deployments = await listAllDeployments();
+            for (const deployment of deployments) {
+              const createdAt = Date.parse(deployment.created_at);
+              if (!Number.isNaN(createdAt) && createdAt >= cutoff) continue;
+
+              try {
+                await github.request('POST /repos/{owner}/{repo}/deployments/{deployment_id}/statuses', {
+                  owner,
+                  repo,
+                  deployment_id: deployment.id,
+                  state: 'inactive',
+                });
+              } catch (error) {
+                core.warning(`Failed to set deployment ${deployment.id} inactive: ${error.message}`);
+              }
+
+              try {
+                await github.request('DELETE /repos/{owner}/{repo}/deployments/{deployment_id}', {
+                  owner,
+                  repo,
+                  deployment_id: deployment.id,
+                });
+              } catch (error) {
+                core.warning(`Failed to delete deployment ${deployment.id}: ${error.message}`);
+              }
+            }
+
+            const runs = await listAllWorkflowRuns();
+            for (const run of runs) {
+              if (run.id === context.runId) continue;
+              if (run.status !== 'completed') continue;
+              const createdAt = Date.parse(run.created_at);
+              if (!Number.isNaN(createdAt) && createdAt >= cutoff) continue;
+
+              try {
+                await github.request('DELETE /repos/{owner}/{repo}/actions/runs/{run_id}', {
+                  owner,
+                  repo,
+                  run_id: run.id,
+                });
+              } catch (error) {
+                core.warning(`Failed to delete run ${run.id}: ${error.message}`);
+              }
+            }
