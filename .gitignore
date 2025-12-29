@@ -1,0 +1,19 @@
+# Ignore All
+*
+!*/
+
+# Allowlist
+!.git/*
+!.gitignore
+!*.config.ts
+!index.html
+!package-lock.json
+!package.json
+!README.md
+!src/**
+!tsconfig.json
+
+# Denylist
+dist
+node_modules
+coverage
