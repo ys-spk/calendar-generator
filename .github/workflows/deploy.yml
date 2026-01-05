@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
+      id-token: write
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout
@@ -48,5 +50,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          token: ${{ secrets.GITHUB_TOKEN }}
