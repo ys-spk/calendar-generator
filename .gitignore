@@ -5,6 +5,7 @@
 # Allowlist
 !.git/*
 !.gitignore
+!.github/**
 !*.config.ts
 !index.html
 !package-lock.json
