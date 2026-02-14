@@ -7,6 +7,7 @@
 !.gitignore
 !.github/**
 !*.config.ts
+!e2e/**
 !index.html
 !package-lock.json
 !package.json
@@ -18,3 +19,5 @@
 dist
 node_modules
 coverage
+playwright-report
+test-results

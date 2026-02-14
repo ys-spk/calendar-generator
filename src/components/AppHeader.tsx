@@ -19,7 +19,10 @@ export function AppHeader({
   onPrint,
 }: AppHeaderProps) {
   return (
-    <header className="rounded-xl bg-white p-6 shadow-sm backdrop-blur dark:bg-slate-800 dark:shadow-slate-900/30 print:hidden">
+    <header
+      data-testid="app-header"
+      className="rounded-xl bg-white p-6 shadow-sm backdrop-blur dark:bg-slate-800 dark:shadow-slate-900/30 print:hidden"
+    >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-8 md:flex-row md:justify-between">
           <h1 className="text-3xl leading-none font-bold dark:text-white">カレンダーつくったー</h1>

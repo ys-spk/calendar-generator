@@ -29,6 +29,7 @@ export function MonthlyCalendarList() {
   return yearGrid.monthGrids.map((monthGrid) => (
     <div
       key={monthGrid.month}
+      data-testid="monthly-calendar-card"
       className="calendar-card h-monthly-height w-common-width grid grid-cols-7 grid-rows-[min-content_min-content]"
     >
       <div className="text-monthly-title pb-1.5mm col-span-full text-center leading-none font-black">
@@ -48,6 +49,7 @@ export function MonthlyCalendarList() {
       {monthGrid.dayCells.map((cell) => (
         <div
           key={cell.date.toISOString()}
+          data-in-month={cell.inMonth}
           className={clsx(
             'bo-common-grid bo-width-0.2mm flex flex-col',
             cellColorClassMap[getCellColorType(cell)]
