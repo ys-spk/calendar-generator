@@ -8,6 +8,7 @@ import {
   WEEKDAY_NUMBERS,
   WEEKDAY_LABELS,
 } from './calendar';
+import { loadHolidays } from './holidays';
 
 describe('calendar', () => {
   describe('formatMonthYear', () => {
@@ -156,6 +157,33 @@ describe('calendar', () => {
       );
       expect(nov3Cell1?.holidayName).toBe('文化の日');
       expect(nov3Cell2?.holidayName).toBe('文化の日');
+    });
+
+    it('うるう年は2月が29日まである', () => {
+      const holidays = loadHolidays(2024);
+      const yearGrid = buildYearGrid(2024, holidays);
+      const febGrid = yearGrid.monthGrids[1];
+      const inMonthCells = febGrid?.dayCells.filter((cell) => cell.inMonth);
+      expect(inMonthCells).toHaveLength(29);
+    });
+
+    it('平年は2月が28日まである', () => {
+      const holidays = loadHolidays(2025);
+      const yearGrid = buildYearGrid(2025, holidays);
+      const febGrid = yearGrid.monthGrids[1];
+      const inMonthCells = febGrid?.dayCells.filter((cell) => cell.inMonth);
+      expect(inMonthCells).toHaveLength(28);
+    });
+
+    it('振替休日が正しく判定されている', () => {
+      const holidays = loadHolidays(2023);
+      const yearGrid = buildYearGrid(2023, holidays);
+      const janGrid = yearGrid.monthGrids[0];
+      const jan2Cell = janGrid?.dayCells.find(
+        (cell) => cell.inMonth && cell.date.getDate() === 2 && cell.date.getMonth() === 0
+      );
+      expect(jan2Cell).toBeDefined();
+      expect(jan2Cell?.holidayName).toBe('振替休日');
     });
 
     it('複数年のグリッドが正しく生成される', () => {

@@ -7,13 +7,14 @@
     "dev": "vite",
     "prebuild": "npm run format && npm run lint",
     "build": "vite build",
-    "postbuild": "npm run test:coverage",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write .",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
+    "test": "npm run test:coverage && npm run test:e2e",
+    "test:e2e": "playwright test",
+    "test:unit": "vitest",
+    "test:unit:ui": "vitest --ui",
+    "test:unit:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {

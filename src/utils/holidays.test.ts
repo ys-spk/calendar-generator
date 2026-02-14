@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import Holidays from 'date-holidays';
+import { describe, it, expect, vi } from 'vitest';
 import { formatDateKey, loadHolidays, MIN_SUPPORTED_YEAR } from './holidays';
 
 describe('holidays', () => {
@@ -49,6 +50,17 @@ describe('holidays', () => {
       const holidays1 = loadHolidays(2024);
       const holidays2 = loadHolidays(2024);
       expect(holidays1).toBe(holidays2);
+    });
+
+    it('getHolidaysがfalsyを返した場合でも空のマップを返す', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(null as any);
+
+      // キャッシュされていない年を使用する
+      const holidays = loadHolidays(1960);
+      expect(holidays).toEqual({});
+
+      spy.mockRestore();
     });
 
     it('振替休日名は「振替休日」となっている', () => {

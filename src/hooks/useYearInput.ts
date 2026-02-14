@@ -9,7 +9,7 @@ type YearInputState = {
 
 type YearInputAction =
   | { type: 'setInput'; value: string }
-  | { type: 'commit'; value?: string | number }
+  | { type: 'commit'; value: string | number }
   | { type: 'adjust'; delta: number };
 
 const parseYear = (value: string | number | undefined): number | null => {
@@ -24,7 +24,7 @@ function reducer(state: YearInputState, action: YearInputAction): YearInputState
     case 'setInput':
       return { ...state, input: action.value };
     case 'commit': {
-      const parsed = parseYear(action.value ?? state.input);
+      const parsed = parseYear(action.value);
       if (parsed === null) {
         return { ...state, input: String(state.year) };
       }
@@ -34,8 +34,6 @@ function reducer(state: YearInputState, action: YearInputAction): YearInputState
       const next = clampYear(state.year + action.delta);
       return { year: next, input: String(next) };
     }
-    default:
-      return state;
   }
 }
 
