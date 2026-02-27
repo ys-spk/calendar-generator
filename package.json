@@ -4,7 +4,7 @@
   "description": "Automatic calendar generator with PDF export",
   "type": "module",
   "scripts": {
-    "generate:holidays": "node scripts/generate-holidays-jp.mjs",
+    "generate:holidays": "node scripts/generate-holidays-jp.mjs && prettier src/data/ --write",
     "predev": "npm run generate:holidays",
     "dev": "npm run cmd:vite",
     "preview": "npm run cmd:vite -- preview",
