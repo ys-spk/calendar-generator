@@ -1,4 +1,5 @@
-import Holidays from 'date-holidays';
+import Holidays from 'date-holidays-parser';
+import holidaysData from '../data/holidays-jp.json';
 import { LRUCache } from './lruCache';
 import { clampYear } from './yearValidation';
 
@@ -7,9 +8,9 @@ export { MIN_SUPPORTED_YEAR } from './yearValidation';
 export type HolidayMap = Record<string, string>;
 const HOLIDAY_CACHE = new LRUCache<number, HolidayMap>(48);
 const HOLIDAY_LAW_START_DATE = new Date('1948-07-20');
-const HOLIDAYS_CALCULATOR = new Holidays('JP');
+const HOLIDAYS_CALCULATOR = new Holidays(holidaysData, 'JP');
 
-/** 日付を `YYYY-MM-DD` 形式に整形する */
+/** 日付を `YYYY-M-D` 形式に整形する */
 export function formatDateKey(dt: Date): string {
   return `${dt.getFullYear()}-${dt.getMonth() + 1}-${dt.getDate()}`;
 }
@@ -50,4 +51,9 @@ export function loadHolidays(year: number): HolidayMap {
   const holidays = buildHolidays(clampedYear);
   HOLIDAY_CACHE.set(clampedYear, holidays);
   return holidays;
+}
+
+/** テスト用: モジュールスコープのキャッシュを初期化する */
+export function resetHolidayCacheForTest(): void {
+  HOLIDAY_CACHE.clear();
 }

@@ -1,5 +1,5 @@
-import type { Page } from 'playwright/test';
-import { expect } from 'playwright/test';
+import type { Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 export const REFERENCE_YEAR = '2026';
 export const MM_TO_PX = 96 / 25.4;

@@ -102,7 +102,31 @@ describe('LRUCache', () => {
 
       // undefinedが明示的に保存された場合でも取得可能
       expect(cacheWithUndefined.get('a')).toBeUndefined();
+      expect(cacheWithUndefined.get('a')).toBeUndefined();
       expect(cacheWithUndefined.get('b')).toBe(2);
+    });
+
+    it('undefined値をgetしてもエントリが消えない', () => {
+      const cacheWithUndefined = new LRUCache<string, number | undefined>(2);
+      cacheWithUndefined.set('a', undefined);
+      cacheWithUndefined.set('b', 2);
+
+      cacheWithUndefined.get('a');
+      cacheWithUndefined.set('c', 3);
+
+      expect(cacheWithUndefined.get('a')).toBeUndefined();
+      expect(cacheWithUndefined.get('b')).toBeUndefined();
+      expect(cacheWithUndefined.get('c')).toBe(3);
+    });
+
+    it('clearで全要素を削除できる', () => {
+      cache.set('a', 1);
+      cache.set('b', 2);
+
+      cache.clear();
+
+      expect(cache.get('a')).toBeUndefined();
+      expect(cache.get('b')).toBeUndefined();
     });
   });
 });

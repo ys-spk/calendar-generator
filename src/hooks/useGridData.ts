@@ -38,3 +38,8 @@ function buildGridData(normalizedYear: number): { holidays: HolidayMap; yearGrid
   GRID_CACHE.set(normalizedYear, result);
   return result;
 }
+
+/** テスト用: モジュールスコープのキャッシュを初期化する */
+export function resetGridCacheForTest(): void {
+  GRID_CACHE.clear();
+}

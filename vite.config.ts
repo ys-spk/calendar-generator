@@ -1,5 +1,5 @@
-/// <reference types="vitest" />
-import { defineConfig, type Plugin } from 'vite';
+import { type Plugin } from 'vite';
+import { defineConfig } from 'vitest/config';
 import React from '@vitejs/plugin-react';
 import UnoCSS from 'unocss/vite';
 

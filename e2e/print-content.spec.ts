@@ -1,4 +1,4 @@
-import { expect, test } from 'playwright/test';
+import { expect, test } from '@playwright/test';
 import { setupCalendar } from './helpers';
 
 test.describe('カレンダー内容', () => {

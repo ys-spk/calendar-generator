@@ -3,8 +3,8 @@ import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { promisify } from 'node:util';
-import { expect, test } from 'playwright/test';
-import { REFERENCE_YEAR } from './helpers';
+import { expect, test } from '@playwright/test';
+import { REFERENCE_YEAR, setupCalendar } from './helpers';
 
 const execFile = promisify(execFileCallback);
 
@@ -28,13 +28,7 @@ const convertPdfToPng = async (pdfPath: string, outputPrefix: string): Promise<s
 
 test.describe('PDF出力 @ci', () => {
   test('印刷結果がPNG画像と一致する', async ({ page }) => {
-    await page.goto('/');
-
-    const yearInput = page.getByRole('spinbutton');
-    await yearInput.fill(REFERENCE_YEAR);
-    await yearInput.blur();
-
-    await page.emulateMedia({ media: 'print' });
+    await setupCalendar(page, REFERENCE_YEAR);
 
     await expect(page.getByTestId('annual-calendar-card')).toBeVisible();
     await expect(page.getByTestId('monthly-calendar-card')).toHaveCount(12);
@@ -63,9 +57,12 @@ test.describe('PDF出力 @ci', () => {
 
       for (const [index, pngPath] of pngPaths.entries()) {
         const pngBinary = await readFile(pngPath);
-        expect(pngBinary).toMatchSnapshot(`calendar-2026-print-page-${index + 1}.png`, {
-          maxDiffPixelRatio: 0.02,
-        });
+        expect(pngBinary).toMatchSnapshot(
+          `calendar-${REFERENCE_YEAR}-print-page-${index + 1}.png`,
+          {
+            maxDiffPixelRatio: 0.02,
+          }
+        );
       }
     } finally {
       await rm(tempDir, { recursive: true, force: true });

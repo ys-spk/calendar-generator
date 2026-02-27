@@ -11,12 +11,10 @@ export class LRUCache<K, V> {
   /** 値を取り出し、使用順を更新する */
   get(key: K): V | undefined {
     if (!this.cache.has(key)) return undefined;
-    const value = this.cache.get(key);
+    const value = this.cache.get(key) as V;
     // Mapは挿入順を保持するため、再挿入で「最近使われた」扱いにする
     this.cache.delete(key);
-    if (value !== undefined) {
-      this.cache.set(key, value);
-    }
+    this.cache.set(key, value);
     return value;
   }
 
@@ -32,5 +30,10 @@ export class LRUCache<K, V> {
       const oldestKey = this.cache.keys().next().value as K;
       this.cache.delete(oldestKey);
     }
+  }
+
+  /** すべてのエントリを削除する */
+  clear(): void {
+    this.cache.clear();
   }
 }

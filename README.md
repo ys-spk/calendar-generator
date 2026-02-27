@@ -15,7 +15,7 @@ Agent Codingの練習用に作成したので無駄に凝ってます。
 - 印刷時、下記サイズのカレンダーが出力されます（年選択用のUIは印刷対象外）
   - 年間カレンダー：160mm x 140mm
   - 月間カレンダー：80mm x 140mm
-- 祝日データは [date-holidays](https://github.com/commenthol/date-holidays) から生成しています。祝日法が改正された場合、当該ライブラリの更新を取り込むことにより反映が行われます。
+- 祝日データは [date-holidays](https://github.com/commenthol/date-holidays) 由来データを元に生成・同梱しています。祝日法が改正された場合、当該ライブラリの更新を取り込むことで反映できます。
 
 ## 動作確認済ブラウザ
 
@@ -36,4 +36,13 @@ npm run dev
 ```bash
 npm run build
 npm run preview
+```
+
+`src/data/holidays-jp.json` は `date-holidays` のデータからビルド時に自動生成されます。
+
+### テスト
+
+```bash
+npm run lint
+npm run test
 ```

@@ -1,4 +1,4 @@
-import { expect, test } from 'playwright/test';
+import { expect, test } from '@playwright/test';
 import { expectDimension, REFERENCE_YEAR, setupCalendar } from './helpers';
 
 test.describe('印刷レイアウト', () => {

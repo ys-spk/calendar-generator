@@ -1,4 +1,4 @@
-import Holidays from 'date-holidays';
+import Holidays from 'date-holidays-parser';
 import { describe, it, expect, vi } from 'vitest';
 import { formatDateKey, loadHolidays, MIN_SUPPORTED_YEAR } from './holidays';
 
