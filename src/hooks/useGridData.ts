@@ -12,12 +12,10 @@ export function useGridData(year: number): {
   holidays: HolidayMap;
   yearGrid: YearGrid;
 } {
-  const normalizedYear = useMemo(
-    () => (Number.isFinite(year) ? clampYear(year) : MIN_SUPPORTED_YEAR),
-    [year]
-  );
-
-  return useMemo(() => buildGridData(normalizedYear), [normalizedYear]);
+  return useMemo(() => {
+    const normalizedYear = Number.isFinite(year) ? clampYear(year) : MIN_SUPPORTED_YEAR;
+    return buildGridData(normalizedYear);
+  }, [year]);
 }
 
 /** 年間データを年ごとにメモ化する */

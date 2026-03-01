@@ -27,7 +27,10 @@
     "e2e/**/*",
     "index.html",
     "uno.config.ts",
-    "vite.config.ts"
+    "vite.config.ts",
+    "playwright.config.ts",
+    "eslint.config.ts",
+    "prettier.config.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

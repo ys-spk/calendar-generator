@@ -1,9 +1,12 @@
 import { renderHook } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { MAX_SUPPORTED_YEAR, MIN_SUPPORTED_YEAR } from '../utils/yearValidation';
-import { useGridData } from './useGridData';
+import { resetGridCacheForTest, useGridData } from './useGridData';
 
 describe('useGridData', () => {
+  beforeEach(() => {
+    resetGridCacheForTest();
+  });
   describe('基本機能', () => {
     it('年を入力するとholidaysとyearGridが出力される', () => {
       const { result } = renderHook(() => useGridData(2024));
@@ -53,6 +56,11 @@ describe('useGridData', () => {
       expect(has2023).toBe(true);
       expect(has2024).toBe(true);
       expect(has2025).toBe(true);
+    });
+
+    it('9999年表示時に10000-1-1の祝日が含まれる', () => {
+      const { result } = renderHook(() => useGridData(9999));
+      expect(result.current.holidays['10000-1-1']).toBe('元日');
     });
   });
 

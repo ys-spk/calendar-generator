@@ -36,6 +36,7 @@ describe('calendar', () => {
     it('当月でなければ"out-of-month"', () => {
       const cell = {
         date: new Date(2024, 0, 1),
+        key: '2024-1-1',
         inMonth: false,
       };
       expect(getCellColorType(cell)).toBe('out-of-month');
@@ -44,6 +45,7 @@ describe('calendar', () => {
     it('祝日名がある場合は"holiday"', () => {
       const cell = {
         date: new Date(2024, 0, 1), // 月曜日
+        key: '2024-1-1',
         inMonth: true,
         holidayName: '元日',
       };
@@ -53,18 +55,21 @@ describe('calendar', () => {
     it('当月中で祝日でなければ、曜日ごとの色を出力', () => {
       const sundayCell = {
         date: new Date(2024, 0, 7), // 日曜日
+        key: '2024-1-7',
         inMonth: true,
       };
       expect(getCellColorType(sundayCell)).toBe('holiday');
 
       const saturdayCell = {
         date: new Date(2024, 0, 6), // 土曜日
+        key: '2024-1-6',
         inMonth: true,
       };
       expect(getCellColorType(saturdayCell)).toBe('saturday');
 
       const weekdayCell = {
         date: new Date(2024, 0, 2), // 火曜日
+        key: '2024-1-2',
         inMonth: true,
       };
       expect(getCellColorType(weekdayCell)).toBe('weekday');

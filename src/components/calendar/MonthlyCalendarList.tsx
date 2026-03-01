@@ -48,7 +48,7 @@ export function MonthlyCalendarList() {
       ))}
       {monthGrid.dayCells.map((cell) => (
         <div
-          key={cell.date.toISOString()}
+          key={cell.key}
           data-in-month={cell.inMonth}
           className={clsx(
             'bo-common-grid bo-width-0.2mm flex flex-col',

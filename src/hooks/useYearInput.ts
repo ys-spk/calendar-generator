@@ -10,11 +10,12 @@ type YearInputState = {
 type YearInputAction =
   | { type: 'setInput'; value: string }
   | { type: 'commit'; value: string | number }
+  | { type: 'commitCurrent' }
   | { type: 'adjust'; delta: number };
 
-const parseYear = (value: string | number | undefined): number | null => {
+const parseYear = (value: string | number): number | null => {
   const numeric = typeof value === 'string' ? Number(value) : value;
-  if (numeric === undefined || numeric === null || !Number.isFinite(numeric)) return null;
+  if (!Number.isFinite(numeric)) return null;
   return clampYear(numeric);
 };
 
@@ -30,6 +31,13 @@ function reducer(state: YearInputState, action: YearInputAction): YearInputState
       }
       return { year: parsed, input: String(parsed) };
     }
+    case 'commitCurrent': {
+      const parsed = parseYear(state.input);
+      if (parsed === null) {
+        return { ...state, input: String(state.year) };
+      }
+      return { year: parsed, input: String(parsed) };
+    }
     case 'adjust': {
       const next = clampYear(state.year + action.delta);
       return { year: next, input: String(next) };
@@ -39,9 +47,10 @@ function reducer(state: YearInputState, action: YearInputAction): YearInputState
 
 /** 年入力を管理するhook */
 export function useYearInput(initialYear: number) {
+  const initialClamped = clampYear(initialYear);
   const [state, dispatch] = useReducer(reducer, {
-    year: clampYear(initialYear),
-    input: String(clampYear(initialYear)),
+    year: initialClamped,
+    input: String(initialClamped),
   });
 
   const setYearInput = useCallback((value: string) => {
@@ -52,14 +61,11 @@ export function useYearInput(initialYear: number) {
     dispatch({ type: 'commit', value });
   }, []);
 
-  const handleYearKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        commitYear(state.input);
-      }
-    },
-    [commitYear, state.input]
-  );
+  const handleYearKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      dispatch({ type: 'commitCurrent' });
+    }
+  }, []);
 
   const incrementYear = useCallback(() => {
     dispatch({ type: 'adjust', delta: 1 });

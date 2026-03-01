@@ -4,6 +4,7 @@ export class LRUCache<K, V> {
   private maxEntries: number;
 
   constructor(maxEntries: number) {
+    if (maxEntries <= 0) throw new RangeError('maxEntries must be positive');
     this.cache = new Map();
     this.maxEntries = maxEntries;
   }
@@ -11,7 +12,7 @@ export class LRUCache<K, V> {
   /** 値を取り出し、使用順を更新する */
   get(key: K): V | undefined {
     if (!this.cache.has(key)) return undefined;
-    const value = this.cache.get(key) as V;
+    const value = this.cache.get(key)!;
     // Mapは挿入順を保持するため、再挿入で「最近使われた」扱いにする
     this.cache.delete(key);
     this.cache.set(key, value);
@@ -26,9 +27,10 @@ export class LRUCache<K, V> {
     }
     this.cache.set(key, value);
     if (this.cache.size > this.maxEntries) {
-      // size > maxEntries ensures at least one entry exists
-      const oldestKey = this.cache.keys().next().value as K;
-      this.cache.delete(oldestKey);
+      for (const oldestKey of this.cache.keys()) {
+        this.cache.delete(oldestKey);
+        break;
+      }
     }
   }
 

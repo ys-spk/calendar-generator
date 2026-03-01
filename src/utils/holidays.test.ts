@@ -39,6 +39,11 @@ describe('holidays', () => {
       expect(Object.keys(holidays2).length).toBeGreaterThan(0);
     });
 
+    it('年10000でも祝日を取得できる', () => {
+      const holidays = loadHolidays(10000);
+      expect(holidays['10000-1-1']).toBe('元日');
+    });
+
     it('日本の祝日が出力されている', () => {
       const holidays = loadHolidays(2024);
 

@@ -31,7 +31,7 @@ export function App() {
             onAdjustYear={(delta) => (delta > 0 ? incrementYear() : decrementYear())}
             onPrint={() => window.print()}
           />
-          <main>
+          <main className="[zoom:0.6] min-[400px]:[zoom:0.7] min-[450px]:[zoom:0.8] min-[500px]:[zoom:0.9] min-[550px]:[zoom:1]">
             <AnnualCalendar />
             <MonthlyCalendarList />
           </main>

@@ -1,7 +1,7 @@
-import { type Plugin } from 'vite';
-import { defineConfig } from 'vitest/config';
 import React from '@vitejs/plugin-react';
 import UnoCSS from 'unocss/vite';
+import { type Plugin } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 function restartOnSpecialFiles(): Plugin {
   return {
@@ -9,7 +9,7 @@ function restartOnSpecialFiles(): Plugin {
     handleHotUpdate({ file, server }) {
       if (file.endsWith('src/styles/config.ts')) {
         console.log('[vite] special file changed, restarting server...');
-        server.restart(true);
+        void server.restart(true);
       }
     },
   };
@@ -24,7 +24,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'date-holidays': ['date-holidays'],
+          'date-holidays': ['date-holidays-parser'],
         },
       },
     },

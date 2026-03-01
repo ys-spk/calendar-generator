@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { useGridData } from '../hooks/useGridData';
 import { YearGrid } from '../utils/calendar';
 import type { HolidayMap } from '../utils/holidays';
@@ -16,8 +16,7 @@ const GridContext = createContext<GridContextValue | undefined>(undefined);
 
 /** 指定年の祝日マップと年間データをContextに提供する */
 export function GridProvider({ year, children }: GridProviderProps) {
-  const { holidays, yearGrid } = useGridData(year);
-  const value = useMemo(() => ({ holidays, yearGrid }), [holidays, yearGrid]);
+  const value = useGridData(year);
 
   return <GridContext.Provider value={value}>{children}</GridContext.Provider>;
 }

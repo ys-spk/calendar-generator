@@ -55,8 +55,9 @@ export function AnnualCalendar() {
           ))}
           {monthGrid.dayCells.map((cell) => (
             <div
-              key={cell.date.toISOString()}
+              key={cell.key}
               data-in-month={cell.inMonth}
+              aria-hidden={!cell.inMonth || undefined}
               className={clsx(
                 'text-annual-date flex items-center justify-center leading-none font-bold',
                 cellColorClassMap[getCellColorType(cell)]

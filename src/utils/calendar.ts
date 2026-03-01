@@ -1,7 +1,8 @@
 import { formatDateKey, type HolidayMap } from './holidays';
 
-type CalendarCell = {
+export type CalendarCell = {
   date: Date;
+  key: string;
   inMonth: boolean;
   holidayName?: string | undefined;
 };
@@ -24,7 +25,6 @@ const WEEKDAY = {
 const MONTHS_IN_YEAR = 12;
 const DAYS_IN_WEEK = 7;
 const GRID_TOTAL_MIN_ROWS = 5;
-const MONTH_GRID_CACHE = new WeakMap<HolidayMap, Map<string, MonthGrid>>();
 
 export const MONTH_NUMBERS = Array.from({ length: MONTHS_IN_YEAR }, (_, i) => i + 1);
 export const WEEKDAY_NUMBERS = Array.from({ length: DAYS_IN_WEEK }, (_, i) => i) as Weekday[];
@@ -45,6 +45,11 @@ export function formatMonthYear(year: number, month: number) {
   return new Date(year, month - 1, 1).toLocaleDateString('en', { month: 'long', year: 'numeric' });
 }
 
+/** 数値が有効な曜日（0–6）かどうかを判定する型ガード */
+function isDayOfWeek(n: number): n is Weekday {
+  return Number.isInteger(n) && n >= 0 && n <= 6;
+}
+
 /** 曜日ごとの色を判定する */
 export function getWeekdayColorType(weekday: Weekday): WeekdayColorType {
   if (weekday === WEEKDAY.SUNDAY) return 'holiday';
@@ -56,17 +61,13 @@ export function getWeekdayColorType(weekday: Weekday): WeekdayColorType {
 export function getCellColorType(cell: CalendarCell): CellColorType {
   if (!cell.inMonth) return 'out-of-month';
   if (cell.holidayName) return 'holiday';
-  return getWeekdayColorType(cell.date.getDay() as Weekday);
+  const dayOfWeek = cell.date.getDay();
+  return isDayOfWeek(dayOfWeek) ? getWeekdayColorType(dayOfWeek) : 'weekday';
 }
 
 /** 1か月分のグリッドを作成する。日曜日始まり・土曜日終わりになるよう前後を埋める */
 function buildMonthGrid(year: number, month: number, holidays: HolidayMap): MonthGrid {
   const monthIndex = month - 1;
-  const monthKey = `${year}-${month}`;
-  const holidayCache = MONTH_GRID_CACHE.get(holidays) ?? new Map<string, MonthGrid>();
-  const cached = holidayCache.get(monthKey);
-  if (cached) return cached;
-
   const firstOfMonth = new Date(year, monthIndex, 1);
   const startDay = firstOfMonth.getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
@@ -83,13 +84,12 @@ function buildMonthGrid(year: number, month: number, holidays: HolidayMap): Mont
     const key = formatDateKey(date);
     return {
       date,
+      key,
       inMonth,
       holidayName: holidays[key],
     };
   });
 
-  holidayCache.set(monthKey, { month, dayCells });
-  MONTH_GRID_CACHE.set(holidays, holidayCache);
   return { month, dayCells };
 }
 

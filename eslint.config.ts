@@ -9,17 +9,19 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   {
-    ignores: ['dist', 'node_modules', '*.config.ts', 'eslint.config.ts', 'coverage', 'scripts'],
+    ignores: ['dist', 'node_modules', 'coverage', 'scripts'],
   },
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   tseslint.configs.stylisticTypeChecked,
-  react.configs.flat.recommended,
+
+  ...(react.configs.flat.recommended != null ? [react.configs.flat.recommended] : []),
   reactHooks.configs.flat.recommended,
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
     plugins: {
       import: importPlugin,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       'jsx-a11y': jsxA11y,
       unicorn,
     },

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { MIN_SUPPORTED_YEAR } from '../utils/yearValidation';
+import { MAX_SUPPORTED_YEAR, MIN_SUPPORTED_YEAR } from '../utils/yearValidation';
 
 type AppHeaderProps = {
   yearInput: string;
@@ -32,6 +32,7 @@ export function AppHeader({
                 <input
                   type="number"
                   min={MIN_SUPPORTED_YEAR}
+                  max={MAX_SUPPORTED_YEAR}
                   value={yearInput}
                   onChange={(e) => onYearInputChange(e.target.value)}
                   onBlur={onYearInputBlur}
