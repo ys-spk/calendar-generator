@@ -2,6 +2,7 @@ import { AppHeader } from './components/AppHeader';
 import { AnnualCalendar } from './components/calendar/AnnualCalendar';
 import { MonthlyCalendarList } from './components/calendar/MonthlyCalendarList';
 import { GridProvider } from './contexts/GridContext';
+import { useCalendarScale } from './hooks/useCalendarScale';
 import { useYearInput } from './hooks/useYearInput';
 
 /** 初期表示年（今年+1年）。年末における翌年分の印刷を想定 */
@@ -17,6 +18,7 @@ export function App() {
     incrementYear,
     decrementYear,
   } = useYearInput(new Date().getFullYear() + UI_DEFAULT_YEAR_OFFSET);
+  const { wrapperRef, mainRef, scale, wrapperHeight } = useCalendarScale();
 
   return (
     <GridProvider year={year}>
@@ -31,10 +33,19 @@ export function App() {
             onAdjustYear={(delta) => (delta > 0 ? incrementYear() : decrementYear())}
             onPrint={() => window.print()}
           />
-          <main className="[zoom:0.6] min-[400px]:[zoom:0.7] min-[450px]:[zoom:0.8] min-[500px]:[zoom:0.9] min-[550px]:[zoom:1]">
-            <AnnualCalendar />
-            <MonthlyCalendarList />
-          </main>
+          <div
+            ref={wrapperRef}
+            className="calendar-scale-wrapper flex w-full items-start justify-center overflow-hidden"
+            style={wrapperHeight != null ? { height: `${wrapperHeight}px` } : undefined}
+          >
+            <main
+              ref={mainRef}
+              style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
+            >
+              <AnnualCalendar />
+              <MonthlyCalendarList />
+            </main>
+          </div>
         </div>
       </div>
     </GridProvider>
