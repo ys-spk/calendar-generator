@@ -9,15 +9,9 @@ import { useYearInput } from './hooks/useYearInput';
 const UI_DEFAULT_YEAR_OFFSET = 1;
 
 export function App() {
-  const {
-    year,
-    yearInput,
-    setYearInput,
-    commitYear,
-    handleYearKeyDown,
-    incrementYear,
-    decrementYear,
-  } = useYearInput(new Date().getFullYear() + UI_DEFAULT_YEAR_OFFSET);
+  const { year, yearInput, setYearInput, commitYear, handleYearKeyDown, adjustYear } = useYearInput(
+    new Date().getFullYear() + UI_DEFAULT_YEAR_OFFSET
+  );
   const { wrapperRef, mainRef, scale, wrapperHeight } = useCalendarScale();
 
   return (
@@ -30,7 +24,7 @@ export function App() {
             onYearInputChange={setYearInput}
             onYearInputBlur={() => commitYear(yearInput)}
             onYearInputKeyDown={handleYearKeyDown}
-            onAdjustYear={(delta) => (delta > 0 ? incrementYear() : decrementYear())}
+            onAdjustYear={adjustYear}
             onPrint={() => window.print()}
           />
           <div

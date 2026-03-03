@@ -10,7 +10,6 @@ type YearInputState = {
 type YearInputAction =
   | { type: 'setInput'; value: string }
   | { type: 'commit'; value: string | number }
-  | { type: 'commitCurrent' }
   | { type: 'adjust'; delta: number };
 
 const parseYear = (value: string | number): number | null => {
@@ -26,13 +25,6 @@ function reducer(state: YearInputState, action: YearInputAction): YearInputState
       return { ...state, input: action.value };
     case 'commit': {
       const parsed = parseYear(action.value);
-      if (parsed === null) {
-        return { ...state, input: String(state.year) };
-      }
-      return { year: parsed, input: String(parsed) };
-    }
-    case 'commitCurrent': {
-      const parsed = parseYear(state.input);
       if (parsed === null) {
         return { ...state, input: String(state.year) };
       }
@@ -61,18 +53,17 @@ export function useYearInput(initialYear: number) {
     dispatch({ type: 'commit', value });
   }, []);
 
-  const handleYearKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      dispatch({ type: 'commitCurrent' });
-    }
-  }, []);
+  const handleYearKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        dispatch({ type: 'commit', value: state.input });
+      }
+    },
+    [state.input]
+  );
 
-  const incrementYear = useCallback(() => {
-    dispatch({ type: 'adjust', delta: 1 });
-  }, []);
-
-  const decrementYear = useCallback(() => {
-    dispatch({ type: 'adjust', delta: -1 });
+  const adjustYear = useCallback((delta: number) => {
+    dispatch({ type: 'adjust', delta });
   }, []);
 
   return {
@@ -81,7 +72,6 @@ export function useYearInput(initialYear: number) {
     setYearInput,
     commitYear,
     handleYearKeyDown,
-    incrementYear,
-    decrementYear,
+    adjustYear,
   };
 }

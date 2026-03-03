@@ -149,12 +149,12 @@ describe('useYearInput', () => {
     });
   });
 
-  describe('incrementYear/decrementYear', () => {
+  describe('adjustYear', () => {
     it('年のインクリメント', () => {
       const { result } = renderHook(() => useYearInput(2024));
 
       act(() => {
-        result.current.incrementYear();
+        result.current.adjustYear(1);
       });
 
       expect(result.current.year).toBe(2025);
@@ -165,7 +165,7 @@ describe('useYearInput', () => {
       const { result } = renderHook(() => useYearInput(2024));
 
       act(() => {
-        result.current.decrementYear();
+        result.current.adjustYear(-1);
       });
 
       expect(result.current.year).toBe(2023);
@@ -176,7 +176,7 @@ describe('useYearInput', () => {
       const { result } = renderHook(() => useYearInput(MAX_SUPPORTED_YEAR));
 
       act(() => {
-        result.current.incrementYear();
+        result.current.adjustYear(1);
       });
 
       expect(result.current.year).toBe(MAX_SUPPORTED_YEAR);
@@ -187,7 +187,7 @@ describe('useYearInput', () => {
       const { result } = renderHook(() => useYearInput(MIN_SUPPORTED_YEAR));
 
       act(() => {
-        result.current.decrementYear();
+        result.current.adjustYear(-1);
       });
 
       expect(result.current.year).toBe(MIN_SUPPORTED_YEAR);
