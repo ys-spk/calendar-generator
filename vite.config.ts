@@ -23,8 +23,10 @@ export default defineConfig({
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'date-holidays': ['date-holidays-parser'],
+        manualChunks(id) {
+          if (id.includes('date-holidays-parser')) {
+            return 'date-holidays';
+          }
         },
       },
     },
