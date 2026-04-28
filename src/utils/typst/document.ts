@@ -13,7 +13,7 @@ const TYPST_COLOR = {
   'out-of-month': 'c-o',
 } as const satisfies Record<ReturnType<typeof getCellColorType>, string>;
 
-const TYPOGRAPHY_PREAMBLE = `#set text(font: ("Mplus 2", "M PLUS 2", "Noto Serif CJK SC"), lang: "ja")
+const TYPOGRAPHY_PREAMBLE = `#set text(font: "M PLUS 2", lang: "ja")
 #let c-h = rgb("#ef4444")
 #let c-s = rgb("#1d4ed8")
 #let c-w = rgb("#000000")

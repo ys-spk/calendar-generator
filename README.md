@@ -8,7 +8,7 @@ Agent Codingの練習用に作成したので無駄に凝ってます。
 ## 実装ポイント
 
 - ブラウザ依存性回避のため、WASM (typst.ts) でSVG/PDFを生成
-- typstには通常の方法でWebフォントを渡すことができないため、 [](https://www.npmjs.com/package/@fontsource/m-plus-2) でインストールしたWOFFファイルをTTFファイルに変換して使用 ~~(普通はこんなことやらないほうがいいと思います)~~
+- typstには通常の方法でWebフォントを渡すことができないため、 [@fontsource/m-plus-2](https://www.npmjs.com/package/@fontsource/m-plus-2) でインストールしたWOFFファイルをTTFファイルに変換して使用 ~~(普通はこんなことやらないほうがいいと思います)~~
 
 ## 仕様
 

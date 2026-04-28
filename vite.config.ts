@@ -7,7 +7,7 @@ function restartOnSpecialFiles(): Plugin {
   return {
     name: 'restart-on-special-files',
     handleHotUpdate({ file, server }) {
-      if (file.endsWith('src/utils/typstLayout.ts')) {
+      if (file.endsWith('src/utils/typst/layout.ts')) {
         console.log('[vite] special file changed, restarting server...');
         void server.restart(true);
       }

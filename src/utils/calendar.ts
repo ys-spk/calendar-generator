@@ -27,23 +27,6 @@ const DAYS_IN_WEEK = 7;
 const GRID_TOTAL_MIN_ROWS = 5;
 
 export const MONTH_NUMBERS = Array.from({ length: MONTHS_IN_YEAR }, (_, i) => i + 1);
-export const WEEKDAY_NUMBERS = Array.from({ length: DAYS_IN_WEEK }, (_, i) => i) as Weekday[];
-export const WEEKDAY_LABELS = {
-  enShort: buildWeekdayLabels('en'),
-  jaShort: buildWeekdayLabels('ja'),
-} as const;
-
-/** 曜日数値から曜日名を生成する（2001年1月0日＝日曜日を基準として算出 */
-function buildWeekdayLabels(locale: string) {
-  return Array.from({ length: DAYS_IN_WEEK }, (_, dayOfWeek) =>
-    new Date(2001, 0, dayOfWeek).toLocaleDateString(locale, { weekday: 'short' })
-  );
-}
-
-/** 年と月を "January 2024" のような英語表記にフォーマットする。 */
-export function formatMonthYear(year: number, month: number) {
-  return new Date(year, month - 1, 1).toLocaleDateString('en', { month: 'long', year: 'numeric' });
-}
 
 /** 数値が有効な曜日（0–6）かどうかを判定する型ガード */
 function isDayOfWeek(n: number): n is Weekday {

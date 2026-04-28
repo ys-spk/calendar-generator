@@ -19,9 +19,7 @@ describe('typstDocument', () => {
   it('buildTypstSource は年間ページと月間4ページを含む 5 ページ構成を生成する', () => {
     const source = buildTypstSource(buildCalendarYearGrid(2026));
 
-    expect(source).toContain(
-      '#set text(font: ("Mplus 2", "M PLUS 2", "Noto Serif CJK SC"), lang: "ja")'
-    );
+    expect(source).toContain('#set text(font: "M PLUS 2", lang: "ja")');
     expect(source).toContain('2026 CALENDAR');
     expect(source).toContain('January 2026');
     expect(source.match(/#pagebreak\(\)/g)).toHaveLength(3);

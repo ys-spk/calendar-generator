@@ -1,25 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import {
-  formatMonthYear,
-  getWeekdayColorType,
-  getCellColorType,
-  buildYearGrid,
-  MONTH_NUMBERS,
-  WEEKDAY_NUMBERS,
-  WEEKDAY_LABELS,
-} from './calendar';
+import { getWeekdayColorType, getCellColorType, buildYearGrid, MONTH_NUMBERS } from './calendar';
 import { loadHolidays } from './holidays';
 
 describe('calendar', () => {
-  describe('formatMonthYear', () => {
-    it('年月を英語形式でフォーマット', () => {
-      expect(formatMonthYear(2024, 1)).toBe('January 2024');
-      expect(formatMonthYear(2024, 6)).toBe('June 2024');
-      expect(formatMonthYear(2024, 12)).toBe('December 2024');
-      expect(formatMonthYear(2025, 1)).toBe('January 2025');
-    });
-  });
-
   describe('getWeekdayColorType', () => {
     it('日曜日は"holiday"、土曜日は"saturday"、それ以外は"weekday"', () => {
       expect(getWeekdayColorType(0)).toBe('holiday');
@@ -218,20 +201,6 @@ describe('calendar', () => {
       expect(MONTH_NUMBERS).toHaveLength(12);
       expect(MONTH_NUMBERS[0]).toBe(1);
       expect(MONTH_NUMBERS[11]).toBe(12);
-    });
-
-    it('曜日の配列', () => {
-      expect(WEEKDAY_NUMBERS).toHaveLength(7);
-      expect(WEEKDAY_NUMBERS[0]).toBe(0);
-      expect(WEEKDAY_NUMBERS[6]).toBe(6);
-    });
-
-    it('曜日ラベルの配列', () => {
-      expect(WEEKDAY_LABELS.enShort).toHaveLength(7);
-      expect(WEEKDAY_LABELS.jaShort).toHaveLength(7);
-
-      expect(WEEKDAY_LABELS.enShort[0]).toBe('Sun');
-      expect(WEEKDAY_LABELS.jaShort[0]).toBe('日');
     });
   });
 });
