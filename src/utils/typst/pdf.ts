@@ -24,7 +24,7 @@ let fontDataPromise: Promise<Uint8Array[]> | null = null;
 
 // wasm-bindgen の新形式: URL 文字列ではなく { module_or_path } オブジェクトで渡す
 function wasmModule(url: string): WebAssemblyModuleRef {
-  return { module_or_path: url } as unknown as WebAssemblyModuleRef;
+  return { module_or_path: url };
 }
 
 async function loadMplus2FontData(): Promise<Uint8Array[]> {

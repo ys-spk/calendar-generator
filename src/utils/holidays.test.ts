@@ -132,8 +132,8 @@ describe('holidays', () => {
 
     it('日付文字列が不正な形式の場合はスキップされる', () => {
       const data = [{ date: 'invalid-date-string', name: '元日', type: 'public' }];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data as any);
+
+      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data);
       const holidays = loadHolidays(2006);
       spy.mockRestore();
       expect(Object.keys(holidays)).not.toContain('2006-1-1');
@@ -141,8 +141,8 @@ describe('holidays', () => {
 
     it('日付の月が範囲外の場合はスキップされる', () => {
       const data = [{ date: '2008-13-01T00:00:00.000+09:00', name: '元日', type: 'public' }];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data as any);
+
+      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data);
       const holidays = loadHolidays(2008);
       spy.mockRestore();
       expect(Object.keys(holidays)).toHaveLength(0);
