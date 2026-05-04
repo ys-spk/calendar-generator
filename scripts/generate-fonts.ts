@@ -109,10 +109,19 @@ async function convertFont(entry: FontEntry): Promise<void> {
 
   // Fontsource の woff サブセットは family 名に weight 名が混入している（例: "M PLUS 2 Thin"）
   // typst が font: "M PLUS 2" で検索できるよう標準的な名前に修正する
-  font.names.fontFamily = { en: 'M PLUS 2' };
-  font.names.fontSubfamily = { en: entry.subfamily };
-  font.names.fullName = { en: `M PLUS 2 ${entry.subfamily}` };
-  font.names.postScriptName = { en: entry.postScriptName };
+  // opentype.js >=1.3.5 で font.names がプラットフォームネスト構造に変更されたため両方に対応する
+  type NameMap = Record<string, { en: string }>;
+  const platformKeys = ['unicode', 'macintosh', 'windows'] as const;
+  const names = font.names as unknown as Record<string, NameMap>;
+  const nameTargets: NameMap[] = platformKeys.some((p) => p in names)
+    ? platformKeys.filter((p) => p in names).map((p) => names[p]!)
+    : [names as unknown as NameMap];
+  for (const target of nameTargets) {
+    target.fontFamily = { en: 'M PLUS 2' };
+    target.fontSubfamily = { en: entry.subfamily };
+    target.fullName = { en: `M PLUS 2 ${entry.subfamily}` };
+    target.postScriptName = { en: entry.postScriptName };
+  }
 
   const outBuf = fixFontTimestamps(Buffer.from(font.toArrayBuffer()));
   await writeFile(outputPath, outBuf);
