@@ -17,12 +17,11 @@ import './styles/theme.css';
 import { downloadCalendarPdf, renderCalendarSvgs } from './utils/typst/pdf';
 
 /** 初期表示年（今年+1年）。年末に翌年版を開く想定 */
-const UI_DEFAULT_YEAR_OFFSET = 1;
+const INITIAL_YEAR = new Date().getFullYear() + 1;
 
 export function App() {
-  const { year, yearInput, setYearInput, commitYear, handleYearKeyDown, adjustYear } = useYearInput(
-    new Date().getFullYear() + UI_DEFAULT_YEAR_OFFSET
-  );
+  const { year, yearInput, setYearInput, commitYear, handleYearKeyDown, adjustYear } =
+    useYearInput(INITIAL_YEAR);
   const debouncedYear = useDebounce(year, 300);
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const [pdfError, setPdfError] = useState<{ year: number; message: string } | null>(null);
@@ -107,7 +106,7 @@ export function App() {
                   key={`${year}-${index + 1}`}
                   className={wasmSvgPageWrapper}
                   data-testid="wasm-svg-page"
-                  // SVG は WASM コンパイラ出力のみ（ユーザー入力を含まない）
+                  // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- WASM コンパイラ出力のみでユーザー入力を含まない
                   dangerouslySetInnerHTML={{ __html: svg }}
                 />
               ))}

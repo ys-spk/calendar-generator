@@ -69,8 +69,14 @@ function normalizeSvg(svg: string): string {
   const clipMap = new Map([...clipOrder].map(([id, i]) => [id, `c${i}`]));
 
   svg = svg
-    .replace(/clip-path="url\(#([^)]+)\)"/g, (_, id: string) => `clip-path="url(#${clipMap.get(id) ?? id})"`)
-    .replace(/<clipPath id="([^"]+)"/g, (_, id: string) => `<clipPath id="${clipMap.get(id) ?? id}"`);
+    .replace(
+      /clip-path="url\(#([^)]+)\)"/g,
+      (_, id: string) => `clip-path="url(#${clipMap.get(id) ?? id})"`
+    )
+    .replace(
+      /<clipPath id="([^"]+)"/g,
+      (_, id: string) => `<clipPath id="${clipMap.get(id) ?? id}"`
+    );
 
   return svg.replace(/ data-tid="[^"]*"/g, '');
 }
