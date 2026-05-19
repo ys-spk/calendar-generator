@@ -4,44 +4,75 @@ import { describe, expect, it } from 'vitest';
 import { renderCalendarPdfInNode, renderCalendarSvgsInNode } from './svgNode';
 
 /**
- * Typst の SVG 出力はグリフ ID が実行ごとに変わる（Rust の HashMap のハッシュランダム化による）。
- * グリフのパスデータ（d 属性）を基準にソートして <defs> を再構築し ID を振り直すことで
- * 決定的な出力にする。
+ * Typst の SVG 出力には実行ごとに変わるランダム ID が含まれる（Rust の HashMap のハッシュランダム化）。
+ * - グリフ ID（href="#gXXX"）: SVG 本文での初出順で振り直し、d 属性（フォント固有パス）は除去
+ * - クリップパス ID（clip-path="url(#cXXX)"）: 本文での初出順で振り直し
+ * これによりフォント・Typst のマイナーアップデートやアーキテクチャの違いに耐えるスナップショットになる。
  */
-function normalizeSvgGlyphIds(svg: string): string {
-  // <defs class="glyph">...</defs> 全体を抽出
+function normalizeSvg(svg: string): string {
+  // ---- グリフ正規化 ----
   const defsBlockMatch = /<defs class="glyph">[\s\S]*?<\/defs>/.exec(svg);
-  if (!defsBlockMatch) return svg;
+  if (defsBlockMatch) {
+    const pathRegex = /<path id="([^"]+)"/g;
+    const ids: string[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = pathRegex.exec(defsBlockMatch[0])) !== null) ids.push(m[1]!);
 
-  // <defs> 内のすべての <path> を抽出
-  const pathRegex = /<path id="([^"]+)"([^/]*\/?>)/g;
-  const paths: { id: string; rest: string }[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = pathRegex.exec(defsBlockMatch[0])) !== null) {
-    paths.push({ id: m[1]!, rest: m[2]! });
+    // SVG 本文での href 初出順を記録
+    const bodyStart = defsBlockMatch.index + defsBlockMatch[0].length;
+    const glyphOrder = new Map<string, number>();
+    let order = 0;
+    const hrefRegex = /href="#(g[^"]+)"/g;
+    let hm: RegExpExecArray | null;
+    while ((hm = hrefRegex.exec(svg.slice(bodyStart))) !== null) {
+      const id = hm[1]!;
+      if (!glyphOrder.has(id)) glyphOrder.set(id, order++);
+    }
+
+    // 初出順でソート（未参照グリフは元の位置順を保持）
+    const sorted = ids
+      .map((id, origIndex) => ({ id, origIndex }))
+      .sort((a, b) => {
+        const oa = glyphOrder.get(a.id) ?? Infinity;
+        const ob = glyphOrder.get(b.id) ?? Infinity;
+        return oa !== ob ? oa - ob : a.origIndex - b.origIndex;
+      });
+
+    const glyphMap = new Map(sorted.map(({ id }, i) => [id, `g${i}`]));
+
+    // defs 未定義の孤立グリフ（スペース文字など）も初出順で番号を振る
+    let phantomOrder = sorted.length;
+    for (const [id] of glyphOrder) {
+      if (!glyphMap.has(id)) glyphMap.set(id, `g${phantomOrder++}`);
+    }
+
+    const newDefs =
+      '<defs class="glyph">' +
+      sorted.map((_, i) => `<path id="g${i}" class="outline_glyph" d=""/>`).join('') +
+      '</defs>';
+
+    svg = svg
+      .replace(/<defs class="glyph">[\s\S]*?<\/defs>/, newDefs)
+      .replace(/\bhref="#(g[^"]+)"/g, (_, id: string) => `href="#${glyphMap.get(id) ?? id}"`);
   }
 
-  // d 属性値でソートして決定的な順序にする
-  paths.sort((a, b) => {
-    const dA = /d="([^"]*)"/.exec(a.rest)?.[1] ?? '';
-    const dB = /d="([^"]*)"/.exec(b.rest)?.[1] ?? '';
-    return dA < dB ? -1 : dA > dB ? 1 : 0;
-  });
+  // ---- クリップパス正規化 ----
+  // clip-path ID は <clipPath id="cXXX"> としてインライン定義され url(#cXXX) で参照される
+  const clipOrder = new Map<string, number>();
+  let clipCount = 0;
+  const clipRefRegex = /clip-path="url\(#([^)]+)\)"|<clipPath id="([^"]+)"/g;
+  let cm: RegExpExecArray | null;
+  while ((cm = clipRefRegex.exec(svg)) !== null) {
+    const id = cm[1] ?? cm[2]!;
+    if (!clipOrder.has(id)) clipOrder.set(id, clipCount++);
+  }
+  const clipMap = new Map([...clipOrder].map(([id, i]) => [id, `c${i}`]));
 
-  // 旧 ID → 新 ID のマッピング（g0, g1, ...）
-  const idMap = new Map(paths.map(({ id }, i) => [id, `g${i}`]));
+  svg = svg
+    .replace(/clip-path="url\(#([^)]+)\)"/g, (_, id: string) => `clip-path="url(#${clipMap.get(id) ?? id})"`)
+    .replace(/<clipPath id="([^"]+)"/g, (_, id: string) => `<clipPath id="${clipMap.get(id) ?? id}"`);
 
-  // ソート済みの <defs> ブロックを再構築
-  const newDefs =
-    '<defs class="glyph">' +
-    paths.map(({ rest }, i) => `<path id="g${i}"${rest}`).join('') +
-    '</defs>';
-
-  // <defs> ブロックを差し替え、body 内の href="#..." と非決定的な data-tid も更新
-  return svg
-    .replace(/<defs class="glyph">[\s\S]*?<\/defs>/, newDefs)
-    .replace(/\bhref="#(g[^"]+)"/g, (_, id: string) => `href="#${idMap.get(id) ?? id}"`)
-    .replace(/ data-tid="[^"]*"/g, '');
+  return svg.replace(/ data-tid="[^"]*"/g, '');
 }
 
 const SNAPSHOT_DIR = join(import.meta.dirname, 'svgNode.test-snapshots');
@@ -59,7 +90,7 @@ describe('typstSvgNode', () => {
       expect(svgs).toHaveLength(5);
 
       for (const [i, svg] of svgs.entries()) {
-        await expect(normalizeSvgGlyphIds(svg)).toMatchFileSnapshot(
+        await expect(normalizeSvg(svg)).toMatchFileSnapshot(
           join(SNAPSHOT_DIR, `calendar-2026-page-${i + 1}.svg`)
         );
       }
