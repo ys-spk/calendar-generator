@@ -29,7 +29,7 @@
     "cmd:playwright": "playwright"
   },
   "dependencies": {
-    "@fontsource/m-plus-2": "^5.2.8",
+    "@fontsource/m-plus-2": "^5.2.9",
     "@myriaddreamin/typst-ts-renderer": "^0.7.0-rc2",
     "@myriaddreamin/typst-ts-web-compiler": "^0.7.0-rc2",
     "@myriaddreamin/typst.ts": "^0.7.0-rc2",
