@@ -42,7 +42,7 @@
   "devDependencies": {
     "@eslint-react/eslint-plugin": "^5.8.9",
     "@eslint/js": "^10.0.1",
-    "@myriaddreamin/typst-ts-node-compiler": "^0.7.0-rc2",
+    "@myriaddreamin/typst-ts-node-compiler": "^0.7.0",
     "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
