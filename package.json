@@ -40,7 +40,7 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@eslint-react/eslint-plugin": "^5.9.0",
+    "@eslint-react/eslint-plugin": "^5.9.1",
     "@eslint/js": "^10.0.1",
     "@myriaddreamin/typst-ts-node-compiler": "^0.7.0",
     "@playwright/test": "^1.61.0",
