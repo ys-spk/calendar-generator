@@ -67,7 +67,6 @@ export default defineConfig([
 
       // Unicorn rules
       'unicorn/filename-case': 'off',
-      'unicorn/no-array-for-each': 'error',
       'unicorn/prefer-node-protocol': 'error',
       'unicorn/prefer-module': 'error',
       'unicorn/prefer-top-level-await': 'off',
