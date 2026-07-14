@@ -34,25 +34,29 @@ function getCompiler(): Promise<NodeCompiler> {
 function compileSource(
   compiler: NodeCompiler,
   source: string
-): ReturnType<NodeCompiler['compile']>['result'] {
+): NonNullable<ReturnType<NodeCompiler['compile']>['result']> {
   const result = compiler.compile({ mainFileContent: source });
   if (result.hasError()) {
     result.printDiagnostics();
     throw new Error('Typst compilation failed');
   }
-  return result.result;
+  const document = result.result;
+  if (!document) {
+    throw new Error('Typst compilation produced no document');
+  }
+  return document;
 }
 
 /** Node.js 環境で Typst ソースを SVG にコンパイルする（テスト専用） */
 export async function renderCalendarSvgsInNode(year: number): Promise<string[]> {
   const compiler = await getCompiler();
   const sources = buildTypstPageSources(buildCalendarYearGrid(year));
-  return sources.map((source) => compiler.svg(compileSource(compiler, source)!));
+  return sources.map((source) => compiler.svg(compileSource(compiler, source)));
 }
 
 /** Node.js 環境で Typst ソースを PDF にコンパイルする（テスト専用） */
 export async function renderCalendarPdfInNode(year: number): Promise<Buffer> {
   const compiler = await getCompiler();
   const source = buildTypstSource(buildCalendarYearGrid(year));
-  return compiler.pdf(compileSource(compiler, source)!);
+  return compiler.pdf(compileSource(compiler, source));
 }

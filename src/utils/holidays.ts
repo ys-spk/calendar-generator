@@ -7,7 +7,8 @@ export { MIN_SUPPORTED_YEAR } from './yearValidation';
 
 export type HolidayMap = Record<string, string>;
 const HOLIDAY_CACHE = new LRUCache<number, HolidayMap>(48);
-const HOLIDAY_LAW_START_DATE = new Date('1948-07-20');
+// ローカルタイム基準で構築する（UTC解釈の文字列パースだと施行日当日がタイムゾーン次第で除外される）
+const HOLIDAY_LAW_START_DATE = new Date(1948, 6, 20);
 const HOLIDAYS_CALCULATOR = new Holidays(holidaysData, 'JP');
 
 /** 日付を `YYYY-M-D` 形式に整形する */
@@ -52,7 +53,6 @@ function parseMonthDay(dateString: string): { month: number; day: number } | und
   if (!match) return undefined;
   const month = Number(match[1]);
   const day = Number(match[2]);
-  if (!Number.isInteger(month) || !Number.isInteger(day)) return undefined;
   if (month < 1 || month > 12 || day < 1 || day > 31) return undefined;
   return { month, day };
 }

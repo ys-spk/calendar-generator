@@ -124,6 +124,24 @@ describe('LRUCache', () => {
       expect(cacheWithUndefined.get('c')).toBe(3);
     });
 
+    it('deleteで指定キーのみ削除できる', () => {
+      cache.set('a', 1);
+      cache.set('b', 2);
+
+      cache.delete('a');
+
+      expect(cache.get('a')).toBeUndefined();
+      expect(cache.get('b')).toBe(2);
+    });
+
+    it('存在しないキーのdeleteは何もしない', () => {
+      cache.set('a', 1);
+
+      cache.delete('nonexistent');
+
+      expect(cache.get('a')).toBe(1);
+    });
+
     it('clearで全要素を削除できる', () => {
       cache.set('a', 1);
       cache.set('b', 2);

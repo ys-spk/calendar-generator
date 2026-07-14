@@ -1,5 +1,5 @@
 import { buildYearGrid, getCellColorType, type CalendarCell, type YearGrid } from '../calendar';
-import { loadHolidays } from '../holidays';
+import { loadHolidays, type HolidayMap } from '../holidays';
 import { clampYear } from '../yearValidation';
 import { typstLayout } from './layout';
 
@@ -21,12 +21,12 @@ const TYPOGRAPHY_PREAMBLE = `#set text(font: "M PLUS 2", lang: "ja")
 #let c-g = rgb("#d4d4d4")`;
 const PAGE_SETUP = `paper: "a4", margin: ${typstLayout.pageMargin}, fill: white`;
 
+/**
+ * Typst マークアップの特殊文字をエスケープする。
+ * `'` / `"` の smart quote 変換は文字化けにはならないため対象外。
+ */
 function esc(value: string): string {
-  return value
-    .replace(/\\/g, '\\\\')
-    .replace(/#/g, '\\#')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]');
+  return value.replace(/[\\#[\]*_`$<>@~/]/g, '\\$&');
 }
 
 function escUnbreakable(value: string): string {
@@ -165,10 +165,6 @@ function buildMonthlyCard(year: number, month: number, dayCells: CalendarCell[])
 ]`;
 }
 
-function buildMonthlyPages(year: number, monthGrids: YearGrid['monthGrids']): string {
-  return buildMonthlyPageSources(year, monthGrids).join(`\n\n#pagebreak()\n\n`);
-}
-
 function buildMonthlyPageSources(year: number, monthGrids: YearGrid['monthGrids']): string[] {
   const { monthly } = typstLayout;
   const cards = monthGrids.map(({ month, dayCells }) => buildMonthlyCard(year, month, dayCells));
@@ -189,10 +185,10 @@ function buildMonthlyPageSources(year: number, monthGrids: YearGrid['monthGrids'
   );
 }
 
-export function loadMergedHolidays(year: number): ReturnType<typeof loadHolidays> {
+export function loadMergedHolidays(year: number): HolidayMap {
   return [-1, 0, 1]
     .map((delta) => loadHolidays(year + delta))
-    .reduce<ReturnType<typeof loadHolidays>>((acc, holidays) => Object.assign(acc, holidays), {});
+    .reduce<HolidayMap>((acc, holidays) => Object.assign(acc, holidays), {});
 }
 
 export function buildCalendarYearGrid(year: number): YearGrid {
@@ -200,19 +196,20 @@ export function buildCalendarYearGrid(year: number): YearGrid {
   return buildYearGrid(normalizedYear, loadMergedHolidays(normalizedYear));
 }
 
-export function buildTypstSource(yearGrid: YearGrid): string {
-  const annualPage = buildAnnualPage(yearGrid.year, yearGrid.monthGrids);
-  const monthlyPages = buildMonthlyPages(yearGrid.year, yearGrid.monthGrids);
-
-  return `${TYPOGRAPHY_PREAMBLE}\n\n${annualPage}\n\n${monthlyPages}`;
+/** 年間1ページ + 月間4ページのページ本体（プリアンブルなし）を生成する */
+function buildPageBodies(yearGrid: YearGrid): string[] {
+  return [
+    buildAnnualPage(yearGrid.year, yearGrid.monthGrids),
+    ...buildMonthlyPageSources(yearGrid.year, yearGrid.monthGrids),
+  ];
 }
 
-export function buildTypstPageSources(yearGrid: YearGrid): string[] {
-  const annualPage = buildAnnualPage(yearGrid.year, yearGrid.monthGrids);
-  const monthlyPages = buildMonthlyPageSources(yearGrid.year, yearGrid.monthGrids);
+/** PDF出力用: 全ページを含む単一の Typst ソースを生成する */
+export function buildTypstSource(yearGrid: YearGrid): string {
+  return `${TYPOGRAPHY_PREAMBLE}\n\n${buildPageBodies(yearGrid).join('\n\n#pagebreak()\n\n')}`;
+}
 
-  return [
-    `${TYPOGRAPHY_PREAMBLE}\n\n${annualPage}`,
-    ...monthlyPages.map((page) => `${TYPOGRAPHY_PREAMBLE}\n\n${page}`),
-  ];
+/** SVGプレビュー用: ページごとに独立した Typst ソースを生成する */
+export function buildTypstPageSources(yearGrid: YearGrid): string[] {
+  return buildPageBodies(yearGrid).map((body) => `${TYPOGRAPHY_PREAMBLE}\n\n${body}`);
 }

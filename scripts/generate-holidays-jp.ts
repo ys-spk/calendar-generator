@@ -14,7 +14,7 @@ type HolidaysSource = {
   names: unknown;
 };
 
-type JapaneseHolidayNames = Record<string, { name: { ja: string } | {} }>;
+type JapaneseHolidayNames = Record<string, { name: { jp: string } }>;
 
 function isHolidaysSource(value: unknown): value is HolidaysSource {
   if (typeof value !== 'object' || value === null) {

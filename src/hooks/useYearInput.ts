@@ -13,6 +13,8 @@ type YearInputAction =
   | { type: 'adjust'; delta: number };
 
 const parseYear = (value: string | number): number | null => {
+  // Number('') は 0 になるため、空入力は「無効」として直前の年に戻す
+  if (typeof value === 'string' && value.trim() === '') return null;
   const numeric = typeof value === 'string' ? Number(value) : value;
   if (!Number.isFinite(numeric)) return null;
   return clampYear(numeric);
@@ -53,14 +55,11 @@ export function useYearInput(initialYear: number) {
     dispatch({ type: 'commit', value });
   }, []);
 
-  const handleYearKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        dispatch({ type: 'commit', value: state.input });
-      }
-    },
-    [state.input]
-  );
+  const handleYearKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      dispatch({ type: 'commit', value: e.currentTarget.value });
+    }
+  }, []);
 
   const adjustYear = useCallback((delta: number) => {
     dispatch({ type: 'adjust', delta });
