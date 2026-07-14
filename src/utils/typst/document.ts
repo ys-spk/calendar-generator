@@ -21,6 +21,15 @@ const TYPOGRAPHY_PREAMBLE = `#set text(font: "M PLUS 2", lang: "ja")
 #let c-g = rgb("#d4d4d4")`;
 const PAGE_SETUP = `paper: "a4", margin: ${typstLayout.pageMargin}, fill: white`;
 
+/** 曜日ヘッダーの文字色（日曜=祝日色、土曜=土曜色、平日=通常色） */
+function weekdayColor(index: number): string {
+  return index === 0
+    ? TYPST_COLOR.holiday
+    : index === 6
+      ? TYPST_COLOR.saturday
+      : TYPST_COLOR.weekday;
+}
+
 /**
  * Typst マークアップの特殊文字をエスケープする。
  * `'` / `"` の smart quote 変換は文字化けにはならないため対象外。
@@ -39,7 +48,7 @@ function buildAnnualMonth(month: number, dayCells: CalendarCell[]): string {
   const { annual, zeroSpacing } = typstLayout;
 
   const weekdayHeaders = WEEKDAY_JA.map((label, index) => {
-    const color = index === 0 ? 'c-h' : index === 6 ? 'c-s' : 'c-w';
+    const color = weekdayColor(index);
     return `grid.cell(
       stroke: (bottom: ${annual.weekdayStrokeWidth} + c-g),
       inset: ${annual.cellInset}
@@ -116,7 +125,7 @@ function buildMonthlyCard(year: number, month: number, dayCells: CalendarCell[])
   );
 
   const weekdayHeaders = WEEKDAY_EN.map((label, index) => {
-    const fill = index === 0 ? 'c-h' : index === 6 ? 'c-s' : 'c-w';
+    const fill = weekdayColor(index);
     return `table.cell(fill: ${fill}, inset: (y: ${monthly.weekdayInsetY}))[#align(center)[#text(fill: white, size: ${monthly.weekdayFontSize}, weight: 700)[${label}]]]`;
   }).join(',\n    ');
 

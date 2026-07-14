@@ -19,6 +19,11 @@ export class LRUCache<K, V> {
     return value;
   }
 
+  /** 値を取り出す。get と異なり使用順は更新しない */
+  peek(key: K): V | undefined {
+    return this.cache.get(key);
+  }
+
   /** 値を追加・更新し、容量超過なら最古の要素を削除する */
   set(key: K, value: V): void {
     // 既存キーの場合は順序を更新するため削除してから再挿入
@@ -27,10 +32,9 @@ export class LRUCache<K, V> {
     }
     this.cache.set(key, value);
     if (this.cache.size > this.maxEntries) {
-      for (const oldestKey of this.cache.keys()) {
-        this.cache.delete(oldestKey);
-        break;
-      }
+      const oldest = this.cache.keys().next();
+      // K に undefined が含まれても正しく動くよう value ではなく done で判定する
+      if (!oldest.done) this.cache.delete(oldest.value);
     }
   }
 

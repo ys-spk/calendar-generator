@@ -27,6 +27,25 @@ describe('LRUCache', () => {
     });
   });
 
+  describe('peek', () => {
+    it('値を取得できるがアクセス順は更新されない', () => {
+      cache.set('a', 1);
+      cache.set('b', 2);
+      cache.set('c', 3);
+
+      expect(cache.peek('a')).toBe(1);
+
+      cache.set('d', 4); // peekでは順序が更新されないため'a'が削除される
+
+      expect(cache.peek('a')).toBeUndefined();
+      expect(cache.peek('b')).toBe(2);
+    });
+
+    it('存在しないキーに対してはundefinedが返却される', () => {
+      expect(cache.peek('nonexistent')).toBeUndefined();
+    });
+  });
+
   describe('LRU削除', () => {
     it('容量超過時は最も古い要素から削除される', () => {
       cache.set('a', 1);

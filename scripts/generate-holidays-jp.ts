@@ -2,8 +2,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(__dirname, '..');
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const projectRoot = resolve(scriptDir, '..');
 const sourcePath = resolve(projectRoot, 'node_modules/date-holidays/data/holidays.json');
 const outputPath = resolve(projectRoot, 'src/data/holidays-jp.json');
 

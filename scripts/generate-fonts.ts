@@ -47,8 +47,8 @@ function computeChecksum(buf: Buffer, offset: number, length: number): number {
   return sum;
 }
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(__dirname, '..');
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const projectRoot = resolve(scriptDir, '..');
 const fontsourceDir = resolve(projectRoot, 'node_modules/@fontsource/m-plus-2/files');
 const outputDir = resolve(projectRoot, 'src/assets/fonts');
 
@@ -105,7 +105,10 @@ async function convertFont(entry: FontEntry): Promise<void> {
   }
 
   const woffBuf = await readFile(inputPath);
-  const font = opentype.parse(woffBuf.buffer);
+  // Buffer が共有プールのスライスの場合 .buffer はプール全体を指すため、該当範囲だけを切り出す
+  const font = opentype.parse(
+    woffBuf.buffer.slice(woffBuf.byteOffset, woffBuf.byteOffset + woffBuf.byteLength)
+  );
 
   // Fontsource の woff サブセットは family 名に weight 名が混入している（例: "M PLUS 2 Thin"）
   // typst が font: "M PLUS 2" で検索できるよう標準的な名前に修正する

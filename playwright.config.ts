@@ -15,7 +15,8 @@ export default defineConfig({
   },
   webServer: {
     // preview（本番ビルド済み出力）に対してテストを実行
-    // 事前に `npm run build` でビルドしておく必要がある
+    // `npm run test:e2e` は直前に build:app を実行して dist を最新化する。
+    // playwright を直接叩く場合は事前に `npm run build:app` が必要
     command: 'npx vite preview --host 127.0.0.1 --port 4173',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,

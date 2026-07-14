@@ -95,8 +95,11 @@ export function renderCalendarSvgs(year: number): Promise<string[]> {
   if (cached) return cached;
 
   const promise = requestRender('svg', normalizedYear).then((response) => response.svgs);
-  // 失敗した Promise はキャッシュから除去し、次回の要求でリトライさせる
-  promise.catch(() => SVG_CACHE.delete(normalizedYear));
+  // 失敗した Promise はキャッシュから除去し、次回の要求でリトライさせる。
+  // LRU 追い出し後に同じ年で再要求された別の Promise を誤って消さないよう、同一性を確認する
+  promise.catch(() => {
+    if (SVG_CACHE.peek(normalizedYear) === promise) SVG_CACHE.delete(normalizedYear);
+  });
   SVG_CACHE.set(normalizedYear, promise);
   return promise;
 }

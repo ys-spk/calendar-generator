@@ -3,8 +3,6 @@ import holidaysData from '../data/holidays-jp.json';
 import { LRUCache } from './lruCache';
 import { MIN_SUPPORTED_YEAR } from './yearValidation';
 
-export { MIN_SUPPORTED_YEAR } from './yearValidation';
-
 export type HolidayMap = Record<string, string>;
 const HOLIDAY_CACHE = new LRUCache<number, HolidayMap>(48);
 // ローカルタイム基準で構築する（UTC解釈の文字列パースだと施行日当日がタイムゾーン次第で除外される）
@@ -85,6 +83,8 @@ export function loadHolidays(year: number): HolidayMap {
     return {};
   }
 
+  // clampYear と異なり下限のみクランプする（意図的な非対称）:
+  // 上限を 9999 に丸めると、9999年グリッドの月外セル用に翌年（10000年）の祝日を引けなくなる
   const normalizedYear = Math.max(MIN_SUPPORTED_YEAR, Math.trunc(year));
   const cached = HOLIDAY_CACHE.get(normalizedYear);
   if (cached) {

@@ -44,15 +44,7 @@ async function loadMplus2FontData(): Promise<Uint8Array[]> {
   if (!fontDataPromise) {
     fontDataPromise = Promise.all(
       MPLUS2_FONT_URLS.map(async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer()))
-    ).then((fontData) => {
-      const expectedCount = MPLUS2_FONT_URLS.length;
-      if (fontData.length !== expectedCount) {
-        throw new Error(
-          `failed to load M PLUS 2 fonts: expected ${expectedCount}, got ${fontData.length}`
-        );
-      }
-      return fontData;
-    });
+    );
   }
 
   return fontDataPromise;
@@ -68,7 +60,9 @@ function ensureCompilerReady(): Promise<void> {
       // フォントファイルの供給は不要（コンパイラ側のみに供給すれば十分）
       $typst.setRendererInitOptions({ getModule: () => wasmModule(rendererWasmUrl) });
       $typst.use(
-        TypstSnippet.preloadFontAssets({ assets: ['text', 'cjk'] }),
+        // typst 既定フォント（jsDelivr 配信）は使わない。カレンダーの全テキストは
+        // #set text(font: "M PLUS 2") で描画されるため、同梱フォントだけで完結する
+        TypstSnippet.disableDefaultFontAssets(),
         ...fontData.map((font) => TypstSnippet.preloadFontData(font))
       );
     })
@@ -125,5 +119,10 @@ async function handleRequest(request: TypstWorkerRequest): Promise<TypstWorkerRe
 }
 
 self.onmessage = (event: MessageEvent<TypstWorkerRequest>) => {
-  void handleRequest(event.data).then((response) => self.postMessage(response));
+  void handleRequest(event.data).then((response) => {
+    // PDF バイト列はコピーせず所有権ごとメインスレッドへ移譲する（Worker 側で再利用しない）
+    const transfer: Transferable[] =
+      response.ok && response.kind === 'pdf' ? [response.bytes.buffer as ArrayBuffer] : [];
+    self.postMessage(response, { transfer });
+  });
 };

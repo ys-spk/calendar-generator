@@ -72,6 +72,32 @@ export const panelErrorDetail = style({
   textAlign: 'left',
 });
 
+export const previewArea = style({
+  position: 'relative',
+});
+
+export const previewRenderingBadge = style({
+  position: 'absolute',
+  top: '12px',
+  left: '50%',
+  zIndex: 1,
+  transform: 'translateX(-50%)',
+  border: `1px solid ${vars.color.pageBorder}`,
+  borderRadius: '999px',
+  background: vars.color.pageBg,
+  padding: '6px 14px',
+  color: vars.color.loadingText,
+  fontSize: '0.85rem',
+  fontWeight: 600,
+  boxShadow: '0 2px 8px rgb(15 23 42 / 0.08)',
+});
+
+// 再レンダリング中は直前のプレビューを保持したまま減光して「古い内容」であることを示す
+export const pageListStale = style({
+  opacity: 0.45,
+  transition: 'opacity 0.15s ease',
+});
+
 export const pageList = style({
   display: 'flex',
   flexDirection: 'column',

@@ -41,10 +41,9 @@ function reducer(state: YearInputState, action: YearInputAction): YearInputState
 
 /** 年入力を管理するhook */
 export function useYearInput(initialYear: number) {
-  const initialClamped = clampYear(initialYear);
-  const [state, dispatch] = useReducer(reducer, {
-    year: initialClamped,
-    input: String(initialClamped),
+  const [state, dispatch] = useReducer(reducer, initialYear, (year) => {
+    const clamped = clampYear(year);
+    return { year: clamped, input: String(clamped) };
   });
 
   const setYearInput = useCallback((value: string) => {

@@ -1,6 +1,7 @@
 import Holidays from 'date-holidays-parser';
 import { describe, it, expect, vi } from 'vitest';
-import { formatDateKey, loadHolidays, MIN_SUPPORTED_YEAR } from './holidays';
+import { formatDateKey, loadHolidays } from './holidays';
+import { MIN_SUPPORTED_YEAR } from './yearValidation';
 
 describe('holidays', () => {
   describe('formatDateKey', () => {
@@ -72,8 +73,8 @@ describe('holidays', () => {
       const data = [
         { date: '2007-01-01T00:00:00.000+09:00', name: { ja: '元日' }, type: 'public' },
       ];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data as any);
+
+      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data);
       const holidays = loadHolidays(2007);
       spy.mockRestore();
       expect(holidays['2007-1-1']).toBe('元日');
@@ -83,8 +84,8 @@ describe('holidays', () => {
       const data = [
         { date: '2001-01-01T00:00:00.000+09:00', name: { jp: '元日' }, type: 'public' },
       ];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data as any);
+
+      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data);
       const holidays = loadHolidays(2001);
       spy.mockRestore();
       expect(holidays['2001-1-1']).toBe('元日');
@@ -94,8 +95,8 @@ describe('holidays', () => {
       const data = [
         { date: '2002-01-01T00:00:00.000+09:00', name: { en: "New Year's Day" }, type: 'public' },
       ];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data as any);
+
+      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data);
       const holidays = loadHolidays(2002);
       spy.mockRestore();
       expect(holidays['2002-1-1']).toBe("New Year's Day");
@@ -105,8 +106,8 @@ describe('holidays', () => {
       const data = [
         { date: '2003-01-01T00:00:00.000+09:00', name: { zh: '元旦' }, type: 'public' },
       ];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data as any);
+
+      const spy = vi.spyOn(Holidays.prototype, 'getHolidays').mockReturnValueOnce(data);
       const holidays = loadHolidays(2003);
       spy.mockRestore();
       expect(holidays['2003-1-1']).toBe('元旦');
