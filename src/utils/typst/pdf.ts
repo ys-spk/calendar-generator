@@ -1,83 +1,104 @@
-import rendererWasmUrl from '@myriaddreamin/typst-ts-renderer/wasm?url';
-import compilerWasmUrl from '@myriaddreamin/typst-ts-web-compiler/wasm?url';
-import { $typst, TypstSnippet } from '@myriaddreamin/typst.ts/contrib/snippet';
-import type { WebAssemblyModuleRef } from '@myriaddreamin/typst.ts/wasm';
-import mplus2BlackUrl from '../../assets/fonts/MPLUS2-Black.ttf?url';
-import mplus2BoldUrl from '../../assets/fonts/MPLUS2-Bold.ttf?url';
-import mplus2ExtraBoldUrl from '../../assets/fonts/MPLUS2-ExtraBold.ttf?url';
-import mplus2MediumUrl from '../../assets/fonts/MPLUS2-Medium.ttf?url';
-import mplus2RegularUrl from '../../assets/fonts/MPLUS2-Regular.ttf?url';
-import { buildCalendarYearGrid, buildTypstPageSources, buildTypstSource } from './document';
+import { LRUCache } from '../lruCache';
+import { clampYear } from '../yearValidation';
+import type { TypstWorkerRequest, TypstWorkerResponse } from './typstWorker';
+import TypstWorker from './typstWorker?worker';
 
-// ── 初期化 ──────────────────────────────────────────────────────────────────
+// ── Worker RPC ──────────────────────────────────────────────────────────────
+// Typst WASM のコンパイルは重いため Web Worker（typstWorker.ts）で実行し、
+// メインスレッドは id 付きリクエストと Promise の対応付けのみを行う。
 
-const MPLUS2_FONT_URLS = [
-  mplus2RegularUrl,
-  mplus2MediumUrl,
-  mplus2BoldUrl,
-  mplus2ExtraBoldUrl,
-  mplus2BlackUrl,
-] as const;
+type SuccessResponse<K extends TypstWorkerRequest['kind']> = Extract<
+  TypstWorkerResponse,
+  { ok: true; kind: K }
+>;
 
-let initPromise: Promise<void> | null = null;
-let fontDataPromise: Promise<Uint8Array[]> | null = null;
+type PendingEntry = {
+  resolve: (response: TypstWorkerResponse & { ok: true }) => void;
+  reject: (error: Error) => void;
+};
 
-// wasm-bindgen の新形式: URL 文字列ではなく { module_or_path } オブジェクトで渡す
-function wasmModule(url: string): WebAssemblyModuleRef {
-  return { module_or_path: url };
+let worker: Worker | null = null;
+let nextRequestId = 1;
+const pendingRequests = new Map<number, PendingEntry>();
+
+function rejectAllPending(error: Error): void {
+  for (const { reject } of pendingRequests.values()) reject(error);
+  pendingRequests.clear();
 }
 
-async function loadMplus2FontData(): Promise<Uint8Array[]> {
-  if (!fontDataPromise) {
-    fontDataPromise = Promise.all(
-      MPLUS2_FONT_URLS.map(async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer()))
-    ).then((fontData) => {
-      const expectedCount = MPLUS2_FONT_URLS.length;
-      if (fontData.length !== expectedCount) {
-        throw new Error(
-          `failed to load M PLUS 2 fonts: expected ${expectedCount}, got ${fontData.length}`
-        );
-      }
-      return fontData;
-    });
+function handleMessage(event: MessageEvent<TypstWorkerResponse>): void {
+  const response = event.data;
+  const pending = pendingRequests.get(response.id);
+  if (!pending) return;
+  pendingRequests.delete(response.id);
+
+  if (response.ok) {
+    pending.resolve(response);
+  } else {
+    pending.reject(new Error(response.error));
   }
-
-  return fontDataPromise;
 }
 
-/** typst WASM コンパイラ＋レンダラーを遅延初期化する（1セッション1回） */
-function ensureCompilerReady(): Promise<void> {
-  if (initPromise) return initPromise;
-  initPromise = loadMplus2FontData()
-    .then((fontData) => {
-      $typst.setCompilerInitOptions({ getModule: () => wasmModule(compilerWasmUrl) });
-      // レンダラーはコンパイラが生成したベクターIRのグリフパスをそのまま変換するため
-      // フォントファイルの供給は不要（コンパイラ側のみに供給すれば十分）
-      $typst.setRendererInitOptions({ getModule: () => wasmModule(rendererWasmUrl) });
-      $typst.use(
-        TypstSnippet.preloadFontAssets({ assets: ['text', 'cjk'] }),
-        ...fontData.map((font) => TypstSnippet.preloadFontData(font))
-      );
-    })
-    .catch((error) => {
-      initPromise = null;
-      fontDataPromise = null;
-      throw error;
+/** Worker 自体の失敗（スクリプトロード失敗など）: 全リクエストを失敗させ、次回に作り直す */
+function handleWorkerFailure(message: string): void {
+  rejectAllPending(new Error(message));
+  worker?.terminate();
+  worker = null;
+}
+
+function ensureWorker(): Worker {
+  if (worker) return worker;
+
+  const created = new TypstWorker();
+  created.onmessage = handleMessage;
+  created.onerror = (event) => handleWorkerFailure(event.message || 'typst worker crashed');
+  created.onmessageerror = () => handleWorkerFailure('typst worker message could not be parsed');
+  worker = created;
+  return created;
+}
+
+function requestRender<K extends TypstWorkerRequest['kind']>(
+  kind: K,
+  year: number
+): Promise<SuccessResponse<K>> {
+  const target = ensureWorker();
+  const id = nextRequestId++;
+
+  return new Promise((resolve, reject) => {
+    pendingRequests.set(id, {
+      resolve: (response) => {
+        if (response.kind !== kind) {
+          reject(new Error(`unexpected worker response kind: ${response.kind}`));
+          return;
+        }
+        resolve(response as SuccessResponse<K>);
+      },
+      reject,
     });
-  return initPromise;
+    target.postMessage({ id, kind, year } satisfies TypstWorkerRequest);
+  });
 }
 
-/** 指定年のカレンダーを SVG 文字列として返す（比較表示用） */
-export async function renderCalendarSvgs(year: number): Promise<string[]> {
-  await ensureCompilerReady();
-  const sources = buildTypstPageSources(buildCalendarYearGrid(year));
-  const pages = await Promise.all(sources.map((source) => $typst.svg({ mainContent: source })));
+// ── 公開 API ────────────────────────────────────────────────────────────────
 
-  if (pages.length === 0) {
-    throw new Error('typst rendering failed — SVG pages were empty');
-  }
+// 1年分のSVGは約1MB。12年分でも十数MBに収まる
+const SVG_CACHE_MAX_YEARS = 12;
+// Promise をキャッシュすることで、同一年のレンダリング実行中の再要求も1回のコンパイルに合流させる
+const SVG_CACHE = new LRUCache<number, Promise<string[]>>(SVG_CACHE_MAX_YEARS);
 
-  return pages;
+/** 指定年のカレンダーを SVG 文字列として返す（プレビュー表示用、年単位でキャッシュ） */
+export function renderCalendarSvgs(year: number): Promise<string[]> {
+  // Worker 側の buildCalendarYearGrid と同じ正規化を行い、キャッシュキーを実際の生成年に揃える
+  const normalizedYear = clampYear(year);
+
+  const cached = SVG_CACHE.get(normalizedYear);
+  if (cached) return cached;
+
+  const promise = requestRender('svg', normalizedYear).then((response) => response.svgs);
+  // 失敗した Promise はキャッシュから除去し、次回の要求でリトライさせる
+  promise.catch(() => SVG_CACHE.delete(normalizedYear));
+  SVG_CACHE.set(normalizedYear, promise);
+  return promise;
 }
 
 function triggerDownload(blob: Blob, filename: string): void {
@@ -95,15 +116,11 @@ function triggerDownload(blob: Blob, filename: string): void {
 
 /** 指定年のカレンダーを PDF としてブラウザダウンロードする */
 export async function downloadCalendarPdf(year: number): Promise<void> {
-  await ensureCompilerReady();
-  const yearGrid = buildCalendarYearGrid(year);
-  const source = buildTypstSource(yearGrid);
-
-  const pdfBytes = await $typst.pdf({ mainContent: source });
-  if (!pdfBytes) throw new Error('typst compilation failed — PDF bytes were empty');
+  const normalizedYear = clampYear(year);
+  const response = await requestRender('pdf', normalizedYear);
 
   triggerDownload(
-    new Blob([pdfBytes as BlobPart], { type: 'application/pdf' }),
-    `calendar-${yearGrid.year}.pdf`
+    new Blob([response.bytes as BlobPart], { type: 'application/pdf' }),
+    `calendar-${normalizedYear}.pdf`
   );
 }

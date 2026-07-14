@@ -99,7 +99,7 @@ describe('useYearInput', () => {
       expect(result.current.yearInput).toBe(String(MAX_SUPPORTED_YEAR));
     });
 
-    it('有効範囲外の値を入力した場合(空文字列は0扱い)', () => {
+    it('空文字列は無効な入力として直前の年に戻す', () => {
       const { result } = renderHook(() => useYearInput(2024));
 
       act(() => {
@@ -110,8 +110,8 @@ describe('useYearInput', () => {
         result.current.commitYear(result.current.yearInput);
       });
 
-      expect(result.current.year).toBe(MIN_SUPPORTED_YEAR);
-      expect(result.current.yearInput).toBe(String(MIN_SUPPORTED_YEAR));
+      expect(result.current.year).toBe(2024);
+      expect(result.current.yearInput).toBe('2024');
     });
   });
 
@@ -124,7 +124,7 @@ describe('useYearInput', () => {
       });
 
       act(() => {
-        const event = new KeyboardEvent('keydown', { key: 'Enter' });
+        const event = { key: 'Enter', currentTarget: { value: '2025' } };
         result.current.handleYearKeyDown(event as unknown as React.KeyboardEvent<HTMLInputElement>);
       });
 
@@ -140,7 +140,7 @@ describe('useYearInput', () => {
       });
 
       act(() => {
-        const event = new KeyboardEvent('keydown', { key: 'a' });
+        const event = { key: 'a', currentTarget: { value: '2025' } };
         result.current.handleYearKeyDown(event as unknown as React.KeyboardEvent<HTMLInputElement>);
       });
 

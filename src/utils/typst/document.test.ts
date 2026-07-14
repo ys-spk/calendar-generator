@@ -22,7 +22,7 @@ describe('typstDocument', () => {
     expect(source).toContain('#set text(font: "M PLUS 2", lang: "ja")');
     expect(source).toContain('2026 CALENDAR');
     expect(source).toContain('January 2026');
-    expect(source.match(/#pagebreak\(\)/g)).toHaveLength(3);
+    expect(source.match(/#pagebreak\(\)/g)).toHaveLength(4);
     expect(source.match(/#set page\(paper: "a4", margin: 15mm, fill: white\)/g)).toHaveLength(5);
   });
 });

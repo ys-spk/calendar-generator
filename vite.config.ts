@@ -28,6 +28,10 @@ export default defineConfig({
       '@myriaddreamin/typst.ts',
     ],
   },
+  worker: {
+    // typst.ts が内部で dynamic import を使うため、iife ではなく ES modules でバンドルする
+    format: 'es',
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

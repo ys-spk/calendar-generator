@@ -34,6 +34,11 @@ export class LRUCache<K, V> {
     }
   }
 
+  /** 指定キーのエントリを削除する */
+  delete(key: K): void {
+    this.cache.delete(key);
+  }
+
   /** すべてのエントリを削除する */
   clear(): void {
     this.cache.clear();

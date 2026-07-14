@@ -1,20 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { getWeekdayColorType, getCellColorType, buildYearGrid, MONTH_NUMBERS } from './calendar';
+import { getCellColorType, buildYearGrid, MONTH_NUMBERS } from './calendar';
 import { loadHolidays } from './holidays';
 
 describe('calendar', () => {
-  describe('getWeekdayColorType', () => {
-    it('日曜日は"holiday"、土曜日は"saturday"、それ以外は"weekday"', () => {
-      expect(getWeekdayColorType(0)).toBe('holiday');
-      expect(getWeekdayColorType(1)).toBe('weekday');
-      expect(getWeekdayColorType(2)).toBe('weekday');
-      expect(getWeekdayColorType(3)).toBe('weekday');
-      expect(getWeekdayColorType(4)).toBe('weekday');
-      expect(getWeekdayColorType(5)).toBe('weekday');
-      expect(getWeekdayColorType(6)).toBe('saturday');
-    });
-  });
-
   describe('getCellColorType', () => {
     it('当月でなければ"out-of-month"', () => {
       const cell = {

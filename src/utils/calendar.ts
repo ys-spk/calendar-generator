@@ -14,13 +14,11 @@ export type YearGrid = {
   year: number;
   monthGrids: MonthGrid[];
 };
-export type CellColorType = 'out-of-month' | WeekdayColorType;
-export type WeekdayColorType = 'holiday' | 'saturday' | 'weekday';
-type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type CellColorType = 'out-of-month' | 'holiday' | 'saturday' | 'weekday';
 
 const WEEKDAY = {
-  SUNDAY: 0 as Weekday,
-  SATURDAY: 6 as Weekday,
+  SUNDAY: 0,
+  SATURDAY: 6,
 } as const;
 const MONTHS_IN_YEAR = 12;
 const DAYS_IN_WEEK = 7;
@@ -28,24 +26,14 @@ const GRID_TOTAL_MIN_ROWS = 5;
 
 export const MONTH_NUMBERS = Array.from({ length: MONTHS_IN_YEAR }, (_, i) => i + 1);
 
-/** 数値が有効な曜日（0–6）かどうかを判定する型ガード */
-function isDayOfWeek(n: number): n is Weekday {
-  return Number.isInteger(n) && n >= 0 && n <= 6;
-}
-
-/** 曜日ごとの色を判定する */
-export function getWeekdayColorType(weekday: Weekday): WeekdayColorType {
-  if (weekday === WEEKDAY.SUNDAY) return 'holiday';
-  if (weekday === WEEKDAY.SATURDAY) return 'saturday';
-  return 'weekday';
-}
-
 /** 日付セルの色を判定する */
 export function getCellColorType(cell: CalendarCell): CellColorType {
   if (!cell.inMonth) return 'out-of-month';
   if (cell.holidayName) return 'holiday';
   const dayOfWeek = cell.date.getDay();
-  return isDayOfWeek(dayOfWeek) ? getWeekdayColorType(dayOfWeek) : 'weekday';
+  if (dayOfWeek === WEEKDAY.SUNDAY) return 'holiday';
+  if (dayOfWeek === WEEKDAY.SATURDAY) return 'saturday';
+  return 'weekday';
 }
 
 /** 1か月分のグリッドを作成する。日曜日始まり・土曜日終わりになるよう前後を埋める */

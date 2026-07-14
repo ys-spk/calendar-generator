@@ -103,9 +103,11 @@ export function App() {
             <div className={pageList} data-testid="wasm-svg-viewer">
               {wasmSvgs.map((svg, index) => (
                 <div
-                  key={`${year}-${index + 1}`}
+                  key={`${debouncedYear}-${index + 1}`}
                   className={wasmSvgPageWrapper}
                   data-testid="wasm-svg-page"
+                  role="img"
+                  aria-label={`${debouncedYear}年カレンダー ${index + 1}ページ目`}
                   // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- WASM コンパイラ出力のみでユーザー入力を含まない
                   dangerouslySetInnerHTML={{ __html: svg }}
                 />
